@@ -5,11 +5,9 @@ from datetime import datetime
 
 st.title("Solar Azimuth and Altitude Calculator")
 
-# Input: Latitude and Longitude
 latitude = st.number_input("Enter Latitude", min_value=-90.0, max_value=90.0, value=0.0)
 longitude = st.number_input("Enter Longitude", min_value=-180.0, max_value=180.0, value=0.0)
 
-# Input: Start Date and End Date (no time input)
 col1, col2 = st.columns(2)
 with col1:
     start_date = st.date_input("Start Date", datetime.today())
@@ -26,18 +24,16 @@ end_datetime = datetime.combine(end_date, datetime.max.time())
 if start_datetime >= end_datetime:
     st.error("End date must be after start date.")
 else:
-    # Create datetime range at the specified interval
     times = pd.date_range(start=start_datetime, end=end_datetime, freq=f'{interval_minutes}min', tz='UTC')
 
-    # Calculate solar position using pvlib
+    # calc solar position
     location = pvlib.location.Location(latitude, longitude)
     solar_position = location.get_solarposition(times)
 
-    # Extract azimuth and altitude
     azimuth = solar_position['azimuth']
     altitude = solar_position['apparent_elevation']  # altitude = elevation above horizon
 
-    # Display results in a table
+    # table
     st.subheader("Solar Azimuth and Altitude Results")
     result_df = pd.DataFrame({
         'Time (UTC)': times,
@@ -45,10 +41,6 @@ else:
         'Solar Altitude (degrees)': altitude.values
     })
     st.dataframe(result_df)
-
-    # Plot azimuth and altitude over time
-    #st.subheader("Solar Azimuth and Altitude Over Time")
-    #st.line_chart(result_df.set_index('Time (UTC)'))
 
     # Download as CSV
     csv = result_df.to_csv(index=False)
